@@ -1,14 +1,14 @@
 from typing import List
 
 class Reads():
-  def __init__(self, filename):
-    self.filename = filename
+  def __init__(self, file_name):
+    self.file_name = file_name
 
   def get_all(self) -> List[str]:
-    return [line.strip() for line in open(self.filename) if line[0] != ">"]
+    return [line.strip() for line in open(self.file_name) if line[0] != ">"]
 
   def get_reads(self):
-    f = open(self.filename)
+    f = open(self.file_name)
     for line in f:
       if line[0] == ">":
         continue
