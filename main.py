@@ -1,9 +1,11 @@
 from source.reads import Reads
-from source.kmer_index import KmerIndex
+from source.kmer_index import KmerIndex, hash_kmer
 
 import time
 
 def main():
+  print(hash_kmer("atg"))
+  return
   reads = Reads("reads.fa")
   reads_as_list = reads.get_all()
   print("There are %d reads in this file" % len(reads_as_list))
