@@ -13,6 +13,17 @@ def hash_kmer(kmer: str) -> int:
     value += base_values[b] * 4 ** (k - i - 1)
   return value
 
+def np_hash_kmer(kmer: str):
+  k = len(kmer)
+  power_arr = np.array([4 ** (k - i - 1) for i in range(k)])
+  kmer_arr = np.array([b for b in kmer])
+  kmer_arr[np.where(kmer_arr == "a")] = 0
+  kmer_arr[np.where(kmer_arr == "c")] = 1 
+  kmer_arr[np.where(kmer_arr == "t")] = 2 
+  kmer_arr[np.where(kmer_arr == "g")] = 3 
+  numeric_arr = kmer_arr.astype(np.uint64)
+  return int(np.convolve(numeric_arr, power_arr, mode="valid")[0])
+
 class NumpyKmerIndex():
   def __init__(self, reads: Reads = None, k: int = 10):
     self.counts = np.zeros(4 ** k) 
@@ -23,7 +34,7 @@ class NumpyKmerIndex():
       for r in reads.get_reads():
         for i in range(len(r) - k + 1):
           kmer = r[i:i + k]
-          hash = hash_kmer(kmer.lower())
+          hash = np_hash_kmer(kmer.lower())
           self.counts[hash] += 1
 
     self.lookup_elapsed_ns_lookup = 0
@@ -42,7 +53,7 @@ class NumpyKmerIndex():
   def get_kmer_count(self, kmer: str) -> int:
     assert len(kmer) == self.k, f"Kmer of length {len(kmer)} provided to KmerIndex configured for k={self.k}"
     t1 = time.time_ns()
-    hash = hash_kmer(kmer.lower())
+    hash = np_hash_kmer(kmer.lower())
     t2 = time.time_ns()
     self.lookup_elapsed_ns_hash += t2 - t1
 
