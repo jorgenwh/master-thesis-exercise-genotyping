@@ -2,6 +2,7 @@ from source.reads import Reads
 
 import numpy as np
 import pickle
+import time
 
 base_values = {"a": 0, "c": 1, "t": 2, "g": 3}
 
@@ -25,6 +26,9 @@ class NumpyKmerIndex():
           hash = hash_kmer(kmer.lower())
           self.counts[hash] += 1
 
+    self.lookup_elapsed_ns_lookup = 0
+    self.lookup_elapsed_ns_hash = 0
+
   @classmethod
   def from_file(cls, file_name: str):
     counts, k = pickle.load(open(file_name, "rb"))
@@ -37,9 +41,23 @@ class NumpyKmerIndex():
 
   def get_kmer_count(self, kmer: str) -> int:
     assert len(kmer) == self.k, f"Kmer of length {len(kmer)} provided to KmerIndex configured for k={self.k}"
-    return self.counts[hash_kmer(kmer.lower())]
+    t1 = time.time_ns()
+    hash = hash_kmer(kmer.lower())
+    t2 = time.time_ns()
+    self.lookup_elapsed_ns_hash += t2 - t1
+
+    t1 = time.time_ns()
+    count = self.counts[hash]
+    t2 = time.time_ns()
+    self.lookup_elapsed_ns_lookup += t2 - t1
+
+    return count 
 
   def set_internal_dict_and_k(self, counts, k):
     self.counts = counts
     self.k = k
+
+  def get_elapsed_lookup_time(self):
+    return self.lookup_elapsed_ns_lookup, self.lookup_elapsed_ns_hash
+
 
